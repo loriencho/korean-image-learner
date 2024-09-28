@@ -1,56 +1,40 @@
 import { ChangeEvent, useRef, useState } from "react";
-import React from "react";
 
-export function FileInput({ accept = "image/*" }) {
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+interface FileInputProps {
+    accept?: string;
+}
 
-  const handleImageUploadClick = () => {
-    fileInputRef.current?.click();
-  };
+export function FileInput({ accept = "image/*" }: FileInputProps) {
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const updateImage = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setImageFile(file);
-    }
-  };
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (files && files.length > 0) {
+            setImageFile(files[0]);
+        }
+    };
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-  };
 
-  const handleFileDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-      const file = event.dataTransfer.files[0];
-      setImageFile(file);
-    }
-  };
+    return (
+        <div className={"container"}>
+            {imageFile ? (
+                <img
+                    src={URL.createObjectURL(imageFile)}
+                    alt="Uploaded"
+                />
+            ) : (
+                <span>Choose file or drag it here</span>
+            )}
 
-  return (
-    <div className={"container"}>
-      <div
-        onDragOver={handleDragOver}
-        onDrop={handleFileDrop}
-        onClick={handleImageUploadClick}
-      >
-        {imageFile ? (
-          <img
-            src={URL.createObjectURL(imageFile)}
-            alt="Uploaded"
-          />
-        ) : (
-          <span>Choose file or drag it here</span>
-        )}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={accept}
-          style={{ display: "none" }}
-          onChange={updateImage}
-        />
-      </div>
-    </div>
-  );
+            <form action="/api/upload" method="POST"
+                onClick={() => fileInputRef.current?.click()}
+                encType="multipart/form-data">
+                <input type="file" name="file"
+                    onChange={handleChange}
+                    accept={accept} />
+                <button type="submit">Upload</button>
+            </form>
+        </div>
+    );
 }
