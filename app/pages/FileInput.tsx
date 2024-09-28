@@ -5,7 +5,6 @@ interface FileInputProps {
 }
 
 export function FileInput({ accept = "image/*" }: FileInputProps) {
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -14,6 +13,22 @@ export function FileInput({ accept = "image/*" }: FileInputProps) {
             setImageFile(files[0]);
         }
     };
+
+    const uploadImage = async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            // handle somehow
+        }
+
+    }
+
 
 
     return (
@@ -27,8 +42,7 @@ export function FileInput({ accept = "image/*" }: FileInputProps) {
                 <span>Choose file or drag it here</span>
             )}
 
-            <form action="/api/upload" method="POST"
-                onClick={() => fileInputRef.current?.click()}
+            <form onSubmit={uploadImage}
                 encType="multipart/form-data">
                 <input type="file" name="file"
                     onChange={handleChange}
