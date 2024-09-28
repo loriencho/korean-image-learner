@@ -2,7 +2,9 @@
  
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    /* config options here */
+    env: {
+      apiKey : ''
+    }
   }
    
   module.exports = nextConfig
