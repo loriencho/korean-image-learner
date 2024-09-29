@@ -1,15 +1,21 @@
 import { ChangeEvent, useRef, useState } from "react";
 
+
 interface FileInputProps {
     accept?: string;
 }
 
 export function FileInput({ accept = "image/*" }: FileInputProps) {
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [fileNames, setFileNames] = useState([]);
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
+
         if (files && files.length > 0) {
+            const names = Array.from(files).map(file => file.name.replaceAll(" ", "_"));
+
+            setFileNames(names);
             setImageFile(files[0]);
         }
     };
@@ -18,13 +24,25 @@ export function FileInput({ accept = "image/*" }: FileInputProps) {
         event.preventDefault();
 
         const formData = new FormData(event.target);
-        const response = await fetch('/api/upload', {
+
+        const uploadRes = await fetch('/api/upload', {
             method: 'POST',
             body: formData
         });
 
-        if (!response.ok) {
-            // handle somehow
+        if (!uploadRes.ok) {
+
+        } else {
+            const textRes = await fetch('/api/imageTextConvert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: fileNames[0] })
+
+            })
+
+            const data = await textRes.json();
+            const words = data.text;
+            console.log(words);
         }
 
     }
