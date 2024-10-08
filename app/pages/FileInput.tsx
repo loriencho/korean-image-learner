@@ -1,5 +1,6 @@
 import { ChangeEvent, useRef, useState } from "react";
-
+import { translateText } from "./translateText.js";
+import { callNIKLAPI } from "./callNIKLAPI.js";
 
 interface FileInputProps {
     accept?: string;
@@ -8,6 +9,9 @@ interface FileInputProps {
 export function FileInput({ accept = "image/*" }: FileInputProps) {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [fileNames, setFileNames] = useState([]);
+    const [OCR, setOCR] = useState("");
+    const [translation, setTranslation] = useState("");
+    const [dictionaryResults, setDictionaryResults] = useState("");
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
@@ -19,6 +23,18 @@ export function FileInput({ accept = "image/*" }: FileInputProps) {
             setImageFile(files[0]);
         }
     };
+
+    const searchDictionary = async (event) => {
+        console.log("Searched");
+        event.preventDefault();
+        const formData = new FormData(event.target);
+
+        const results = await callNIKLAPI(formData.get("text"));
+
+        console.log(results);
+        setDictionaryResults(results.toString());
+
+    }
 
     const uploadImage = async (event) => {
         event.preventDefault();
@@ -42,7 +58,11 @@ export function FileInput({ accept = "image/*" }: FileInputProps) {
 
             const data = await textRes.json();
             const words = data.text;
+            console.log("OCR: ");
             console.log(words);
+            setOCR(words);
+            const translated = await translateText(words);
+            setTranslation(translated);
         }
 
     }
@@ -75,6 +95,28 @@ export function FileInput({ accept = "image/*" }: FileInputProps) {
                   </svg>
                 </button>
             </form>
+
+            <div className="textbox">
+                <p>
+                    {OCR}
+                </p>
+
+                <p>
+                    {translation}
+                </p>
+                <form onSubmit={searchDictionary}
+                encType="multipart/form-data">
+                    <input type="text" name="text"></input>
+                    <button type="submit">
+                        Search Dictionary
+                    </button>
+                </form>      
+
+                <p>
+                    {dictionaryResults}   
+                </p>      
+            </div>
         </div>
+        
     );
 }
