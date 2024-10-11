@@ -11,7 +11,7 @@ export async function callNIKLAPI(query) {
         const words = [];
 
         const regex = /<!\[CDATA\[(.*?)\]\]>/
-        for (var i = 0; i < elements.length; i++) {
+        for (var i = 0; i < elements.length && i < 2; i++) {
             words[i] = elements[i].innerHTML.match(regex)[1];
         }
         return words;
